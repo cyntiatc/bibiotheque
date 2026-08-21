@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>  <!--2.7.1-SNAPSHOT-->
+		<version>2.7.18</version>  <!-- bumped from 2.4.5: compatible with JDK 17-21, reste sur javax.* (pas de migration Jakarta) -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ibizabroker</groupId>
@@ -14,7 +14,7 @@
 	<name>bibliotheque</name>
 	<description>Library Management System</description>
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -29,6 +29,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<!-- Requis pour @Valid / @NotNull (module reservations) : decouple de
+		     starter-web depuis Spring Boot 2.3, non present jusqu'ici. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -37,9 +43,18 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<!-- Migrations de base de donnees. Pas de <version> : geree par le BOM
+		     spring-boot-starter-parent 2.7.18 (Flyway 9.x). Sur cette branche
+		     9.x, flyway-core suffit pour PostgreSQL (pas besoin du module
+		     flyway-database-postgresql, requis seulement a partir de Flyway 10 /
+		     Spring Boot 3). -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -50,6 +65,14 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
+		</dependency>
+		<!-- Swagger / OpenAPI UI. NB: "springdoc-openapi-starter-webmvc-ui" (demandé) est la
+		     déclinaison Spring Boot 3 / Jakarta ; ce projet reste en Spring Boot 2.7 / javax,
+		     donc on utilise l'artefact équivalent de la branche 1.x. -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.7.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
