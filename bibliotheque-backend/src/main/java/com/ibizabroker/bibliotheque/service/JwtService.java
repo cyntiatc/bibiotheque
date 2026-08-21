@@ -6,9 +6,8 @@ import com.ibizabroker.bibliotheque.entity.JwtResponse;
 import com.ibizabroker.bibliotheque.entity.Users;
 import com.ibizabroker.bibliotheque.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,33 +28,36 @@ public class JwtService implements UserDetailsService {
     private UsersRepository userDao;
 
     @Autowired
+    @Lazy
     private AuthenticationManager authenticationManager;
 
-    public JwtResponse createJwtToken(JwtRequest jwtRequest) throws Exception {
-        String username = jwtRequest.getUsername();
-        String password = jwtRequest.getPassword();
+    public JwtResponse createJwtToken(JwtRequest jwtRequest) {
+        String username = jwtRequest.username();
+        String password = jwtRequest.password();
         authenticate(username, password);
 
         UserDetails userDetails = loadUserByUsername(username);
         String newGeneratedToken = jwtUtil.generateToken(userDetails);
 
-        Users user = userDao.findByUsername(username).get();
+        Users user = userDao.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
         return new JwtResponse(user, newGeneratedToken);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userDao.findByUsername(username).get();
+        // NB : l'ancien code faisait .get() avant de tester "user != null", ce qui
+        // levait une NoSuchElementException (non geree) au lieu du
+        // UsernameNotFoundException attendu par Spring Security si l'utilisateur
+        // n'existait pas -> le bloc "else" ci-dessous n'etait jamais atteint.
+        Users user = userDao.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        if (user != null) {
-            return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    user.getPassword(),
-                    getAuthority(user)
-            );
-        } else {
-            throw new UsernameNotFoundException("User not found with username: " + username);
-        }
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                getAuthority(user)
+        );
     }
 
     private Set getAuthority(Users user) {
@@ -66,13 +68,12 @@ public class JwtService implements UserDetailsService {
         return authorities;
     }
 
-    private void authenticate(String userName, String userPassword) throws Exception {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
-        } catch (DisabledException e) {
-            throw new Exception("USER_DISABLED", e);
-        } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
-        }
+    // Ne catch plus DisabledException/BadCredentialsException pour les emballer dans
+    // une Exception generique : ce sont deja des AuthenticationException (non
+    // checked). Les laisser se propager permet a ExceptionTranslationFilter de les
+    // intercepter et de delegue a JwtAuthenticationEntryPoint -> 401 propre, au lieu
+    // de remonter jusqu'au DispatcherServlet en tant qu'Exception non geree (500).
+    private void authenticate(String userName, String userPassword) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
     }
 }

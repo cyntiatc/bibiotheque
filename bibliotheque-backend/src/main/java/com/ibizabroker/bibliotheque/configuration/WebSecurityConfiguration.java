@@ -3,7 +3,9 @@ package com.ibizabroker.bibliotheque.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -25,6 +27,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Autowired
+    @Lazy
     private JwtRequestFilter jwtRequestFilter;
 
     @Autowired
@@ -40,7 +43,13 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors();
         httpSecurity.csrf().disable()
-                .authorizeRequests().antMatchers("/authenticate", "/borrow/**", "/admin/books/").permitAll()
+                .authorizeRequests().antMatchers("/authenticate", "/borrow/**").permitAll()
+                // GET /admin/books (liste) est documenté public dans le README (colonne Rôle = "—").
+                // Le pattern d'origine "/admin/books/" (slash final) ne correspondait jamais à
+                // "/admin/books" et forçait un 401 sur la liste : on cible explicitement le verbe et le chemin.
+                .antMatchers(HttpMethod.GET, "/admin/books").permitAll()
+                // Swagger / OpenAPI : documentation, pas de données sensibles à protéger.
+                .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                 .antMatchers(HttpHeaders.ALLOW).permitAll()
                 .anyRequest().authenticated()
                 .and()
@@ -57,8 +66,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+    @Override
+    protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
         authenticationManagerBuilder.userDetailsService(jwtService).passwordEncoder(passwordEncoder());
     }
 }

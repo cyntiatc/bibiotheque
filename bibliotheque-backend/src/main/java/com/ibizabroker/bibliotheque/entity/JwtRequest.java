@@ -1,23 +1,14 @@
 package com.ibizabroker.bibliotheque.entity;
 
-public class JwtRequest {
-
-    private String username;
-    private String password;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUserName(String userName) {
-        this.username = userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.password = userPassword;
-    }
+/**
+ * Corps de requete de POST /authenticate.
+ * Record : desserialisation Jackson via le constructeur canonique (noms de
+ * parametres conserves grace a -parameters, active par defaut par
+ * spring-boot-starter-parent). Remplace l'ancienne classe dont les setters
+ * (setUserName/setUserPassword) ne correspondaient pas aux getters
+ * (getUsername/getPassword) : ca fonctionnait par un fallback Jackson sur les
+ * champs prives, mais restait un piege silencieux (aucune erreur en cas de
+ * echec de desserialisation, juste des valeurs null).
+ */
+public record JwtRequest(String username, String password) {
 }

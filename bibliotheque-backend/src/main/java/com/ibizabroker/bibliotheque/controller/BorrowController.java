@@ -6,7 +6,14 @@ import com.ibizabroker.bibliotheque.dao.UsersRepository;
 import com.ibizabroker.bibliotheque.entity.Books;
 import com.ibizabroker.bibliotheque.entity.Borrow;
 import com.ibizabroker.bibliotheque.entity.Users;
+import com.ibizabroker.bibliotheque.exceptions.ConflictException;
+import com.ibizabroker.bibliotheque.exceptions.NotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +24,7 @@ import java.util.List;
 @Repository
 @RestController
 @RequestMapping("/borrow")
+@Tag(name = "Gestion des emprunts", description = "Emprunt, retour et historique des emprunts de livres")
 public class BorrowController {
 
     @Autowired
@@ -28,13 +36,26 @@ public class BorrowController {
     @Autowired
     private BooksRepository booksRepository;
 
+    @Operation(
+            summary = "Emprunter un livre",
+            description = "Décrémente le nombre d'exemplaires disponibles et enregistre l'emprunt avec une date d'échéance à 7 jours. " +
+                    "Endpoint public (aucune authentification requise)."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Emprunt enregistré avec succès"),
+            @ApiResponse(responseCode = "404", description = "Aucun livre ou utilisateur ne correspond à l'identifiant fourni"),
+            @ApiResponse(responseCode = "409", description = "Le livre n'a plus d'exemplaire disponible")
+    })
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public String borrowBook(@RequestBody Borrow borrow) {
-        Users user = usersRepository.findById(borrow.getUserId()).get();
-        Books book = booksRepository.findById(borrow.getBookId()).get();
+        Users user = usersRepository.findById(borrow.getUserId())
+                .orElseThrow(() -> new NotFoundException("User with id " + borrow.getUserId() + " does not exist."));
+        Books book = booksRepository.findById(borrow.getBookId())
+                .orElseThrow(() -> new NotFoundException("Book with id " + borrow.getBookId() + " does not exist."));
 
         if (book.getNoOfCopies() < 1) {
-            return "The book \"" + book.getBookName() + "\" is out of stock!";
+            throw new ConflictException("Le livre \"" + book.getBookName() + "\" n'a plus d'exemplaire disponible.");
         }
 
         book.borrowBook();
@@ -52,15 +73,32 @@ public class BorrowController {
         return user.getName() + " has borrowed one copy of \"" + book.getBookName() + "\"!";
     }
 
+    @Operation(
+            summary = "Lister tous les emprunts",
+            description = "Retourne l'historique complet des emprunts, en cours et terminés."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste des emprunts retournée avec succès")
+    })
     @GetMapping
     public List<Borrow> getAllBorrow() {
         return borrowRepository.findAll();
     }
 
+    @Operation(
+            summary = "Retourner un livre emprunté",
+            description = "Incrémente le nombre d'exemplaires disponibles et renseigne la date de retour de l'emprunt."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Retour enregistré avec succès"),
+            @ApiResponse(responseCode = "404", description = "Aucun emprunt ou livre ne correspond à l'identifiant fourni")
+    })
     @PutMapping
     public Borrow returnBook(@RequestBody Borrow borrow) {
-        Borrow borrowBook = borrowRepository.findById(borrow.getBorrowId()).get();
-        Books book = booksRepository.findById(borrowBook.getBookId()).get();
+        Borrow borrowBook = borrowRepository.findById(borrow.getBorrowId())
+                .orElseThrow(() -> new NotFoundException("Borrow with id " + borrow.getBorrowId() + " does not exist."));
+        Books book = booksRepository.findById(borrowBook.getBookId())
+                .orElseThrow(() -> new NotFoundException("Book with id " + borrowBook.getBookId() + " does not exist."));
 
         book.returnBook();
         booksRepository.save(book);
@@ -70,11 +108,25 @@ public class BorrowController {
         return borrowRepository.save(borrowBook);
     }
 
+    @Operation(
+            summary = "Lister les emprunts d'un utilisateur",
+            description = "Retourne l'historique des emprunts effectués par l'utilisateur dont l'identifiant est fourni."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Liste des emprunts de l'utilisateur retournée avec succès (liste vide si aucun emprunt)")
+    })
     @GetMapping("user/{id}")
     public List<Borrow> booksBorrowedByUser(@PathVariable Integer id) {
         return borrowRepository.findByUserId(id);
     }
 
+    @Operation(
+            summary = "Lister l'historique des emprunts d'un livre",
+            description = "Retourne l'historique des emprunts effectués pour le livre dont l'identifiant est fourni."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Historique des emprunts du livre retourné avec succès (liste vide si aucun emprunt)")
+    })
     @GetMapping("book/{id}")
     public List<Borrow> bookBorrowHistory(@PathVariable Integer id) {
         return borrowRepository.findByBookId(id);
