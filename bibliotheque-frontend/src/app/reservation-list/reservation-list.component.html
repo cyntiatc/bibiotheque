@@ -4,16 +4,16 @@
   <div class="status-filter mb-3">
     <button type="button"
             class="btn btn-sm"
-            [class.btn-primary]="selectedStatus === ''"
-            [class.btn-outline-light]="selectedStatus !== ''"
+            [class.btn-success]="selectedStatus === ''"
+            [class.btn-outline-secondary]="selectedStatus !== ''"
             (click)="onFilterClick('')">
       Tous
     </button>
     <button type="button"
             *ngFor="let option of statusOptions"
             class="btn btn-sm"
-            [class.btn-primary]="selectedStatus === option.value"
-            [class.btn-outline-light]="selectedStatus !== option.value"
+            [class.btn-success]="selectedStatus === option.value"
+            [class.btn-outline-secondary]="selectedStatus !== option.value"
             (click)="onFilterClick(option.value)">
       {{ option.label }}
     </button>
@@ -49,7 +49,7 @@
     <!-- État : Données -->
     <div *ngIf="state === 'data'">
       <div class="table-wrapper">
-        <table class="table table-striped table-hover align-middle reservation-table">
+        <table class="table table-success table-striped align-middle reservation-table">
           <thead>
             <tr>
               <th>Livre</th>

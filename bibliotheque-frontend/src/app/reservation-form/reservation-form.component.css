@@ -1,17 +1,17 @@
 /*
- * La classe Bootstrap ".card" impose un fond blanc, alors que le texte
- * hérite du blanc défini globalement sur le <body> de l'application
- * (thème sombre) : les labels/titres du formulaire étaient donc rendus
- * en blanc sur blanc, totalement invisibles. On en fait une carte sombre
- * "surélevée" par rapport au fond de la page, avec un texte clair explicite.
+ * Alignement sur le thème clair du tableau (cf. ".table-success" dans
+ * ReservationListComponent) : carte claire à bordure sobre, avec un texte
+ * sombre explicite. Sans cette couleur de texte, les labels hériteraient du
+ * blanc défini globalement sur le <body> (thème sombre du reste de
+ * l'application) et deviendraient illisibles sur cette carte claire.
  * (sélecteur ".card.reservation-form-card" pour primer sur ".card", à
- * spécificité égale). Les <select> gardent leur fond clair par défaut
- * (Bootstrap), donc restent lisibles sans changement.
+ * spécificité égale). Les <select> gardent leur style Bootstrap par défaut
+ * (fond blanc, texte sombre), identique à celui des champs de "Add Book".
  */
 .card.reservation-form-card {
-  background-color: #242526;
-  color: #f5f5f5;
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: #ffffff;
+  color: #212529;
+  border-color: #dee2e6;
 }
 
 /* Le formulaire reste visible en défilant avec la liste sur grand écran... */
