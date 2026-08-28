@@ -1,0 +1,13 @@
+/* Le formulaire reste visible en défilant avec la liste sur grand écran... */
+.reservation-form-card {
+  position: sticky;
+  top: 1rem;
+}
+
+/* ...mais redevient un bloc normal dès qu'il s'empile au-dessus/en dessous
+   de la liste (mobile / tablette, cf. layout du conteneur). */
+@media (max-width: 991.98px) {
+  .reservation-form-card {
+    position: static;
+  }
+}

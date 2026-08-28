@@ -30,7 +30,10 @@ export class AuthInterceptor implements HttpInterceptor {
                 } else if(err.status === 403) {
                     this.router.navigate(['/forbidden']);
                 }
-                return throwError("Some thing is wrong");
+                // On repropage l'erreur HTTP d'origine (statut + corps JSON du backend)
+                // au lieu d'un message générique, pour que les composants puissent
+                // afficher les messages métier précis (409/400/404).
+                return throwError(() => err);
             }
         )
     );

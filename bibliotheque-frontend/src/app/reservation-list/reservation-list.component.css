@@ -1,0 +1,89 @@
+.status-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+/* Scroll horizontal propre en tablette si le tableau ne tient pas en largeur. */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reservation-table {
+  min-width: 720px;
+  margin-bottom: 0;
+}
+
+.pagination-wrapper .pagination {
+  row-gap: 0.25rem;
+}
+
+/* Modale de confirmation : gérée entièrement par Angular (*ngIf), pas de
+   dépendance au bundle JS de Bootstrap (non chargé dans ce projet). */
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.confirm-modal {
+  z-index: 1050;
+}
+
+/* Mobile : le tableau devient une pile de cartes lisibles, sans scroll horizontal. */
+@media (max-width: 767.98px) {
+  .table-wrapper {
+    overflow-x: visible;
+  }
+
+  .reservation-table {
+    min-width: 0;
+  }
+
+  .reservation-table thead {
+    display: none;
+  }
+
+  .reservation-table,
+  .reservation-table tbody,
+  .reservation-table tr,
+  .reservation-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .reservation-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .reservation-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    border: none;
+    padding: 0.4rem 0;
+    text-align: right;
+  }
+
+  .reservation-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: left;
+    margin-right: auto;
+  }
+}

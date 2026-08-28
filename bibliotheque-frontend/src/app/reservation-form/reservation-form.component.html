@@ -1,0 +1,56 @@
+<div class="card reservation-form-card">
+  <div class="card-body">
+    <h3 class="card-title h5 mb-3">Nouvelle réservation</h3>
+
+    <!-- Échec du chargement des dropdowns Livre / Adhérent -->
+    <div class="alert alert-warning py-2" role="alert" *ngIf="optionsError">
+      <div>{{ optionsError }}</div>
+      <button type="button" class="btn btn-sm btn-outline-dark mt-2" (click)="retryOptions.emit()">
+        Réessayer
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+
+      <div class="mb-3">
+        <label for="reservation-livre" class="form-label">Livre</label>
+        <select id="reservation-livre" class="form-select" formControlName="livreId">
+          <option [ngValue]="null" disabled>
+            {{ optionsLoading ? 'Chargement des livres...' : '-- Sélectionner un livre --' }}
+          </option>
+          <option *ngFor="let book of books; trackBy: trackById" [ngValue]="book.id">
+            {{ book.nom }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="reservation-adherent" class="form-label">Adhérent</label>
+        <select id="reservation-adherent" class="form-select" formControlName="adherentId">
+          <option [ngValue]="null" disabled>
+            {{ optionsLoading ? 'Chargement des adhérents...' : '-- Sélectionner un adhérent --' }}
+          </option>
+          <option *ngFor="let member of members; trackBy: trackById" [ngValue]="member.id">
+            {{ member.nom }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Erreur métier renvoyée par le backend lors de la création (409 / 400 / 404) -->
+      <div class="alert alert-danger py-2" role="alert" *ngIf="errorMessage">
+        <div>{{ errorMessage }}</div>
+        <ul class="mb-0 ps-3" *ngIf="validationErrors">
+          <li *ngFor="let field of objectKeys(validationErrors)">
+            {{ validationErrors[field] }}
+          </li>
+        </ul>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100" [disabled]="form.invalid || isSubmitting">
+        <span class="spinner-border spinner-border-sm me-2" *ngIf="isSubmitting" aria-hidden="true"></span>
+        {{ isSubmitting ? 'Réservation en cours...' : 'Réserver' }}
+      </button>
+
+    </form>
+  </div>
+</div>

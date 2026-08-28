@@ -1,0 +1,37 @@
+<div class="reservation-page">
+  <h2 class="mb-4">Gestion des réservations</h2>
+
+  <div class="row g-4">
+    <!-- Liste + filtre : contenu principal -->
+    <div class="col-12 col-lg-8">
+      <app-reservation-list
+        [reservations]="reservations"
+        [state]="listState"
+        [errorMessage]="listErrorMessage"
+        [selectedStatus]="selectedStatus"
+        [cancelError]="cancelErrorMessage"
+        [cancellingId]="cancellingId"
+        (statusFilterChange)="onStatusFilterChange($event)"
+        (retry)="loadReservations()"
+        (cancel)="onCancelReservation($event)"
+        (dismissCancelError)="cancelErrorMessage = null">
+      </app-reservation-list>
+    </div>
+
+    <!-- Formulaire de création : panneau latéral (s'empile en dessous sur mobile/tablette) -->
+    <div class="col-12 col-lg-4">
+      <app-reservation-form
+        [books]="books"
+        [members]="members"
+        [optionsLoading]="optionsLoading"
+        [optionsError]="optionsError"
+        [isSubmitting]="isSubmitting"
+        [errorMessage]="formErrorMessage"
+        [validationErrors]="formValidationErrors"
+        [resetSignal]="formResetSignal"
+        (create)="onCreateReservation($event)"
+        (retryOptions)="loadFormOptions()">
+      </app-reservation-form>
+    </div>
+  </div>
+</div>
