@@ -5,7 +5,7 @@
     <button type="button"
             class="btn btn-sm"
             [class.btn-primary]="selectedStatus === ''"
-            [class.btn-outline-primary]="selectedStatus !== ''"
+            [class.btn-outline-light]="selectedStatus !== ''"
             (click)="onFilterClick('')">
       Tous
     </button>
@@ -13,7 +13,7 @@
             *ngFor="let option of statusOptions"
             class="btn btn-sm"
             [class.btn-primary]="selectedStatus === option.value"
-            [class.btn-outline-primary]="selectedStatus !== option.value"
+            [class.btn-outline-light]="selectedStatus !== option.value"
             (click)="onFilterClick(option.value)">
       {{ option.label }}
     </button>

@@ -24,6 +24,32 @@
   margin-bottom: 0;
 }
 
+/*
+ * Bootstrap fixe --bs-table-* (couleur de texte de base, des lignes zébrées
+ * et du survol) sur des tons quasi noirs (#212529), pensés pour un fond de
+ * page clair. Sur le fond sombre de cette application, ce texte devenait
+ * illisible. On force donc un texte clair pour l'en-tête, les cellules,
+ * les lignes zébrées et le survol (sélecteur "table.reservation-table" pour
+ * primer sur les règles ".table" de Bootstrap, à spécificité égale).
+ */
+table.reservation-table {
+  color: #ffffff;
+  --bs-table-striped-color: #ffffff;
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.06);
+  --bs-table-hover-color: #ffffff;
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.12);
+  --bs-table-active-color: #ffffff;
+  --bs-table-active-bg: rgba(255, 255, 255, 0.14);
+}
+
+table.reservation-table thead th {
+  color: #e0e0e0;
+}
+
+table.reservation-table tbody td {
+  color: #ffffff;
+}
+
 .pagination-wrapper .pagination {
   row-gap: 0.25rem;
 }
